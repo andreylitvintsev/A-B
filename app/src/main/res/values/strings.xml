@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TransitionBetweenFragments</string>
+    <string name="a_content">A</string>
+    <string name="b_content">B</string>
+</resources>
