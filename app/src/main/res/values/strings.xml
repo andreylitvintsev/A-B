@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">TransitionBetweenFragments</string>
+    <string name="app_name">A | B</string>
     <string name="a_content">A</string>
     <string name="b_content">B</string>
+    <string name="navigation_to_fragment_1">Go to A</string>
+    <string name="navigation_to_fragment_2">Go to B</string>
 </resources>
