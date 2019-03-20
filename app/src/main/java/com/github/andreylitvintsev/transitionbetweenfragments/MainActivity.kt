@@ -1,19 +1,11 @@
 package com.github.andreylitvintsev.transitionbetweenfragments
 
-import android.animation.Animator
 import android.animation.AnimatorInflater
 import android.animation.ObjectAnimator
-import android.content.pm.ActivityInfo
 import android.os.Bundle
-import android.os.PersistableBundle
-import android.system.Os.remove
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import androidx.annotation.AnimatorRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.animation.addListener
-import androidx.fragment.app.FragmentTransaction
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -52,8 +44,7 @@ class MainActivity : AppCompatActivity() {
                     .remove(fragments[1])
                     .add(R.id.fragmentContainer, FragmentA())
                     .animate { view, baseFragment ->
-                        return@animate ObjectAnimator.ofFloat(view, "rotation", -45f)
-                            .setDuration(1000L)
+                        return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up)
                     }
                 .letsGo()
                 true
