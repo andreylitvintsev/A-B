@@ -2,10 +2,12 @@ package com.github.andreylitvintsev.transitionbetweenfragments
 
 import android.animation.Animator
 import android.animation.AnimatorInflater
+import android.animation.ObjectAnimator
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.system.Os.remove
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.AnimatorRes
@@ -23,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        if (savedInstanceState == null) supportFragmentManager.beginTransaction().add(R.id.fragmentContainer, fragments[0]).commit()
+//        if (savedInstanceState == null) supportFragmentManager.beginTransaction().add(R.id.fragmentContainer, fragments[0]).commit()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
@@ -34,11 +36,26 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         return when (item?.itemId) {
             R.id.fragment1 -> {
-                openFragment(fragments[0])
+//                openFragment(fragments[0])
                 true
             }
             R.id.fragment2 -> {
-                openFragment(fragments[1])
+//                openFragment(fragments[1])
+
+                FragmentComposer(supportFragmentManager)
+                    .remove(fragments[0])
+                    .add(R.id.fragmentContainer, fragments[1])
+                    .animate { view, baseFragment ->
+                        return@animate ObjectAnimator.ofFloat(view, "rotation", 45f)
+                            .setDuration(1000L)
+                    }
+                    .remove(fragments[1])
+                    .add(R.id.fragmentContainer, FragmentA())
+                    .animate { view, baseFragment ->
+                        return@animate ObjectAnimator.ofFloat(view, "rotation", -45f)
+                            .setDuration(1000L)
+                    }
+                .letsGo()
                 true
             }
 
