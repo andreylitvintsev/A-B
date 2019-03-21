@@ -18,6 +18,7 @@ abstract class BaseFragment : Fragment() {
 
     private var animatorListener: Animator.AnimatorListener? = null
     private var onResumeListener: (() -> Unit)? = null
+    private var onViewCreatedListener: (() -> Unit)? = null
 
 
     @LayoutRes
@@ -25,6 +26,11 @@ abstract class BaseFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(getLayoutId(), container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        onViewCreatedListener?.invoke()
     }
 
     override fun onResume() {
@@ -80,8 +86,12 @@ abstract class BaseFragment : Fragment() {
         }
     }
 
-    fun setOnResumeListener(listener: (() -> Unit)) {
+    fun setOnResumeListener(listener: () -> Unit) {
         onResumeListener = listener
+    }
+
+    fun setOnViewCreatedListener(listener: () -> Unit) {
+        onViewCreatedListener = listener
     }
 
     override fun onStop() {

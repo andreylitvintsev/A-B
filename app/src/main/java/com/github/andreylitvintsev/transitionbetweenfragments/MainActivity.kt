@@ -43,8 +43,13 @@ class MainActivity : AppCompatActivity() {
                     }
                     .remove(fragments[1])
                     .add(R.id.fragmentContainer, FragmentA())
+                    .transform { view, baseFragment ->
+                        (view as SupportedFractionFrameLayout).yFraction = 0f
+                    }
                     .animate { view, baseFragment ->
-                        return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up)
+                        return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up).apply {
+                            setTarget(view)
+                        }
                     }
                 .letsGo()
                 true

@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentManager
 
 
 private enum class CommandType {
-    TRANSACTION, ANIMATION
+    TRANSACTION, ANIMATION, TRANSFORM
 }
 
 private class CommandDescriptor(
@@ -55,6 +55,23 @@ class FragmentComposer(
             with(animationCreating.invoke(nullSafetyFragmentView, nullSafetyCurrentFragment)) {
                 start()
                 launchNextCommandForAnimation(this)
+            }
+        }
+        return this@FragmentComposer
+    }
+
+    fun transform(viewTransformation: (view: View, baseFragment: BaseFragment) -> Unit): FragmentComposer {
+        newCommand(CommandType.TRANSFORM) {
+            currentFragment?.setOnViewCreatedListener {
+                val nullSafetyCurrentFragment = currentFragment
+                    ?: throw IllegalStateException("Must be fragment added before 'transform' method!")
+
+                val nullSafetyFragmentView = nullSafetyCurrentFragment.view
+                    ?: throw IllegalStateException("Fragment must be have the view!")
+
+                viewTransformation.invoke(nullSafetyFragmentView, nullSafetyCurrentFragment)
+
+                nextCommandDescriptor()?.command?.invoke()
             }
         }
         return this@FragmentComposer
