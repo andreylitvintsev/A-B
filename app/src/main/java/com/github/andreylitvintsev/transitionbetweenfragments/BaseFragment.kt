@@ -1,25 +1,23 @@
 package com.github.andreylitvintsev.transitionbetweenfragments
 
-import android.animation.Animator
-import android.animation.AnimatorInflater
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
-import androidx.core.animation.addListener
 import androidx.fragment.app.Fragment
 
 
-abstract class BaseFragment : Fragment() {
+abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
 
-    private var animator: Animator? = null
-
-    private var animatorListener: Animator.AnimatorListener? = null
+    private var resumed = false
     private var onResumeListener: (() -> Unit)? = null
+
+    private var viewCreated = false
     private var onViewCreatedListener: (() -> Unit)? = null
 
+    private var viewLayoutChanged = false
+    private var onViewLayoutChangeListener: (() -> Unit)? = null
 
     @LayoutRes
     abstract fun getLayoutId(): Int
@@ -29,80 +27,63 @@ abstract class BaseFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        view.addOnLayoutChangeListener(this)
+
         super.onViewCreated(view, savedInstanceState)
+
         onViewCreatedListener?.invoke()
+        viewCreated = true
     }
 
     override fun onResume() {
         super.onResume()
+
         onResumeListener?.invoke()
+        resumed = true
     }
 
-    override fun onCreateAnimator(transit: Int, enter: Boolean, nextAnim: Int): Animator? {
-        animator = super.onCreateAnimator(transit, enter, nextAnim)
-
-        if (animator == null && nextAnim != 0) {
-            animator = AnimatorInflater.loadAnimator(context, nextAnim)
-        }
-
-        if (animator != null && nextAnim != 0) {
-//            animator.observeLifecycle(lifecycle)
-        }
-
-        if (animatorListener != null) {
-            animator?.addListener(animatorListener)
-        }
-
-
-        return animator
+    override fun onDestroyView() {
+        view!!.removeOnLayoutChangeListener(this)
+        super.onDestroyView()
     }
 
-    fun setAnimatorListener(
-        onEnd: (animator: Animator?, isCanceled: Boolean) -> Unit = { _, _ -> },
-        onStart: (animator: Animator?) -> Unit = {},
-        onCancel: (animator: Animator?) -> Unit = {},
-        onRepeat: (animator: Animator?) -> Unit = {}
+    override fun onLayoutChange(
+        v: View?,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+        oldLeft: Int,
+        oldTop: Int,
+        oldRight: Int,
+        oldBottom: Int
     ) {
-        animatorListener = object : Animator.AnimatorListener {
-            private var isCanceled = false
+        onViewLayoutChangeListener?.invoke()
+        viewLayoutChanged = true
+    }
 
-            override fun onAnimationEnd(animation: Animator?) {
-                onEnd(animation, isCanceled)
-                isCanceled = false
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-                onStart(animation)
-            }
-
-            override fun onAnimationCancel(animation: Animator?) {
-                isCanceled = true
-                onCancel(animation)
-            }
-
-            override fun onAnimationRepeat(animation: Animator?) {
-                onRepeat(animation)
-            }
+    fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: () -> Unit) {
+        onResumeListener = listener
+        if (needInvokeAfterEvent && resumed) {
+            onViewCreatedListener?.invoke()
+            resumed = false
         }
     }
 
-    fun setOnResumeListener(listener: () -> Unit) {
-        onResumeListener = listener
-    }
-
-    fun setOnViewCreatedListener(listener: () -> Unit) {
+    fun setOnViewCreatedListener(needInvokeAfterEvent: Boolean = false, listener: () -> Unit) {
         onViewCreatedListener = listener
+        if (needInvokeAfterEvent && viewCreated) {
+            onViewCreatedListener?.invoke()
+            viewCreated = false
+        }
     }
 
-    override fun onStop() {
-        animator?.cancel()
-        super.onStop()
+    fun setOnViewLayoutChanged(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
+        onViewLayoutChangeListener = listener
+        if (needInvokeAfterEvent && viewLayoutChanged) {
+            onViewLayoutChangeListener?.invoke()
+            viewLayoutChanged = false
+        }
     }
 
 }
-
-
-// move to back
-// show
-
-

@@ -44,6 +44,24 @@ class SupportedFractionFrameLayout : FrameLayout {
             return Point(displayMetrics.widthPixels, displayMetrics.heightPixels)
         }
 
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
+
+
+    var h: Int = 20
+    var w: Int = 20
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        this.h = h
+        this.w = w
+    }
+
     var xFraction: Float
         get() {
             return x / displaySize.x

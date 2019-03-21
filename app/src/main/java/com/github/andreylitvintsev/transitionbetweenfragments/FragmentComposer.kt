@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentManager
 
 
 private enum class CommandType {
-    TRANSACTION, ANIMATION, TRANSFORM
+    TRANSACTION, ANIMATION, TRANSFORM, WAIT
 }
 
 private class CommandDescriptor(
@@ -46,13 +46,13 @@ class FragmentComposer(
 
     fun animate(animationCreating: (view: View, baseFragment: BaseFragment) -> Animator): FragmentComposer {
         newCommand(CommandType.ANIMATION) {
-            val nullSafetyCurrentFragment = currentFragment
+            val nonNullableCurrentFragment = currentFragment
                 ?: throw IllegalStateException("Must be fragment added before 'animate' method!")
 
-            val nullSafetyFragmentView = nullSafetyCurrentFragment.view
+            val nonNullableFragmentView = nonNullableCurrentFragment.view
                 ?: throw IllegalStateException("Fragment must be have the view!")
 
-            with(animationCreating.invoke(nullSafetyFragmentView, nullSafetyCurrentFragment)) {
+            with(animationCreating.invoke(nonNullableFragmentView, nonNullableCurrentFragment)) {
                 start()
                 launchNextCommandForAnimation(this)
             }
@@ -62,16 +62,26 @@ class FragmentComposer(
 
     fun transform(viewTransformation: (view: View, baseFragment: BaseFragment) -> Unit): FragmentComposer {
         newCommand(CommandType.TRANSFORM) {
-            currentFragment?.setOnViewCreatedListener {
-                val nullSafetyCurrentFragment = currentFragment
+            currentFragment?.setOnViewCreatedListener(needInvokeAfterEvent = true) {
+                val nonNullableCurrentFragment = currentFragment
                     ?: throw IllegalStateException("Must be fragment added before 'transform' method!")
 
-                val nullSafetyFragmentView = nullSafetyCurrentFragment.view
+                val nonNullableFragmentView = nonNullableCurrentFragment.view
                     ?: throw IllegalStateException("Fragment must be have the view!")
 
-                viewTransformation.invoke(nullSafetyFragmentView, nullSafetyCurrentFragment)
+                viewTransformation.invoke(nonNullableFragmentView, nonNullableCurrentFragment)
 
                 nextCommandDescriptor()?.command?.invoke()
+            }
+        }
+        return this@FragmentComposer
+    }
+
+    fun waitForViewLayoutChanged(): FragmentComposer {
+        newCommand(CommandType.WAIT) {
+            currentFragment?.setOnViewLayoutChanged(needInvokeAfterEvent = true) {
+                nextCommandDescriptor()?.command?.invoke()
+                currentFragment?.setOnViewLayoutChanged(listener = null)
             }
         }
         return this@FragmentComposer
@@ -91,7 +101,7 @@ class FragmentComposer(
 
     private fun launchNextCommandForTransaction(baseFragment: BaseFragment) {
         if (checkNextCommandForType(CommandType.ANIMATION)) {
-            baseFragment.setOnResumeListener {
+            baseFragment.setOnResumeListener(needInvokeAfterEvent = true) {
                 nextCommandDescriptor()?.command?.invoke()
             }
         } else {
