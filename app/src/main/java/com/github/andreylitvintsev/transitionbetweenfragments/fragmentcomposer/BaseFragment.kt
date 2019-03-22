@@ -31,15 +31,23 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
 
         view.addOnLayoutChangeListener(this)
 
-        onViewCreatedListener?.invoke()
-        viewCreated = true
+        if (onViewCreatedListener != null) {
+            viewCreated = false
+            onViewCreatedListener?.invoke()
+        } else {
+            viewCreated = true
+        }
     }
 
     override fun onResume() {
         super.onResume()
 
-        onResumeListener?.invoke()
-        resumed = true
+        if (onResumeListener != null) {
+            resumed = false
+            onResumeListener?.invoke()
+        } else {
+            resumed = true
+        }
     }
 
     override fun onDestroyView() {
@@ -58,8 +66,12 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
         oldRight: Int,
         oldBottom: Int
     ) {
-        onViewLayoutChangeListener?.invoke()
-        viewLayoutChanged = true
+        if (onViewLayoutChangeListener != null) {
+            viewLayoutChanged = false
+            onViewLayoutChangeListener?.invoke()
+        } else {
+            viewLayoutChanged = true
+        }
     }
 
     fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: () -> Unit) {

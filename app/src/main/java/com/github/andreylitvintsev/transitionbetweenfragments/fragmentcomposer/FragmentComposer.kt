@@ -30,7 +30,7 @@ class FragmentComposer(
         newCommand(CommandType.TRANSACTION) {
             currentFragment = baseFragment
             fragmentManager.beginTransaction().add(containerViewId, baseFragment).commit()
-            launchNextCommandForTransaction(baseFragment)
+            nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
@@ -38,7 +38,7 @@ class FragmentComposer(
     fun setTargetFragment(baseFragment: BaseFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
             currentFragment = baseFragment
-            launchNextCommandForTransaction(baseFragment)
+            nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
@@ -47,20 +47,17 @@ class FragmentComposer(
         newCommand(CommandType.TRANSACTION) {
             currentFragment = baseFragment
             fragmentManager.beginTransaction().remove(baseFragment).commit()
-            launchNextCommandForTransaction(baseFragment)
+            nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
 
     fun animate(animationCreating: (view: View, baseFragment: BaseFragment) -> Animator): FragmentComposer {
         newCommand(CommandType.ANIMATION) {
-            val nonNullableCurrentFragment = currentFragment
-                ?: throw IllegalStateException("Must be fragment added before 'animate' method!")
-
-            val nonNullableFragmentView = nonNullableCurrentFragment.view
-                ?: throw IllegalStateException("Fragment must be have the view!")
-
-            with(animationCreating.invoke(nonNullableFragmentView, nonNullableCurrentFragment)) {
+            animationCreating.invoke(
+                getSafetyCurrentFragmentView(),
+                getSafetyCurrentFragment()
+            ).run {
                 start()
                 launchNextCommandForAnimation(this)
             }
@@ -71,14 +68,10 @@ class FragmentComposer(
     fun transform(viewTransformation: (view: View, baseFragment: BaseFragment) -> Unit): FragmentComposer {
         newCommand(CommandType.TRANSFORM) {
             currentFragment?.setOnViewCreatedListener(needInvokeAfterEvent = true) {
-                val nonNullableCurrentFragment = currentFragment
-                    ?: throw IllegalStateException("Must be fragment added before 'transform' method!")
-
-                val nonNullableFragmentView = nonNullableCurrentFragment.view
-                    ?: throw IllegalStateException("Fragment must be have the view!")
-
-                viewTransformation.invoke(nonNullableFragmentView, nonNullableCurrentFragment)
-
+                viewTransformation.invoke(
+                    getSafetyCurrentFragmentView(),
+                    getSafetyCurrentFragment()
+                )
                 nextCommandDescriptor()?.command?.invoke()
             }
         }
@@ -87,8 +80,26 @@ class FragmentComposer(
 
     fun waitForViewLayoutChanged(): FragmentComposer {
         newCommand(CommandType.WAIT) {
-            currentFragment?.setOnViewLayoutChanged(needInvokeAfterEvent = true) {
-                currentFragment?.setOnViewLayoutChanged(listener = null)
+            getSafetyCurrentFragment().setOnViewLayoutChanged(needInvokeAfterEvent = true) {
+                currentFragment!!.setOnViewLayoutChanged(listener = null)
+                nextCommandDescriptor()?.command?.invoke()
+            }
+        }
+        return this@FragmentComposer
+    }
+
+    fun waitForViewCreated(): FragmentComposer {
+        newCommand(CommandType.WAIT) {
+            getSafetyCurrentFragment().setOnViewCreatedListener(needInvokeAfterEvent = true) {
+                nextCommandDescriptor()?.command?.invoke()
+            }
+        }
+        return this@FragmentComposer
+    }
+
+    fun waitForFragmentResume(): FragmentComposer {
+        newCommand(CommandType.WAIT) {
+            getSafetyCurrentFragment().setOnResumeListener(needInvokeAfterEvent = true) {
                 nextCommandDescriptor()?.command?.invoke()
             }
         }
@@ -110,17 +121,7 @@ class FragmentComposer(
             })
     }
 
-    private fun launchNextCommandForTransaction(baseFragment: BaseFragment) {
-        if (checkNextCommandForType(CommandType.ANIMATION)) {
-            baseFragment.setOnResumeListener(needInvokeAfterEvent = true) {
-                nextCommandDescriptor()?.command?.invoke()
-            }
-        } else {
-            nextCommandDescriptor()?.command?.invoke()
-        }
-    }
-
-    private fun launchNextCommandForAnimation(fragmentAnimator: Animator) {
+    private fun launchNextCommandForAnimation(fragmentAnimator: Animator) { // TODO: заменить
         if (hasNextCommand()) {
             fragmentAnimator.addListener(onEnd = {
                 nextCommandDescriptor()?.command?.invoke()
@@ -134,6 +135,18 @@ class FragmentComposer(
 
     private fun checkNextCommandForType(commandType: CommandType): Boolean {
         return (hasNextCommand()) && commands[currentCommandIndex + 1].commandType == commandType
+    }
+
+    private inline fun getSafetyCurrentFragment(): BaseFragment {
+        return nonNullable(currentFragment, "Must be fragment added before 'transform' method!")
+    }
+
+    private inline fun getSafetyCurrentFragmentView(): View {
+        return nonNullable(currentFragment?.view, "Fragment must be have the view!")
+    }
+
+    private inline fun <T> nonNullable(nullableValue: T?, exceptionMessage: String): T {
+        return nullableValue ?: throw IllegalStateException(exceptionMessage)
     }
 
     fun letsGo() {

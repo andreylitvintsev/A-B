@@ -49,18 +49,23 @@ class MainActivity : AppCompatActivity() {
 
         FragmentComposer(supportFragmentManager)
             .setTargetFragment(currentFragment)
-            .animate { view, _ ->
-                return@animate AnimatorInflater.loadAnimator(this, R.animator.move_to_back).apply {
-                    setTarget(view)
-                }
-            }
+//            .animate { view, _ ->
+//                return@animate AnimatorInflater.loadAnimator(this, R.animator.move_to_back).apply {
+//                    setTarget(view)
+//                }
+//            }
             .add(R.id.fragmentContainer, newFragment)
-            .waitForViewLayoutChanged() // вьюха еще не готова для анимирования, проблема в том что не сбрасывается флаг у все время существующего фрагмента
-            .animate { view, _ ->
-                return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up).apply {
-                    setTarget(view)
-                }
-            }
+//            .waitForViewLayoutChanged() // вьюха еще не готова для анимирования, проблема в том что не сбрасывается флаг у все время существующего фрагмента + вообще по идее не нужно вызывать
+            .waitForViewCreated()
+//            .transform { view, baseFragment ->
+//                (view as SupportedFractionFrameLayout).yFraction = 1f
+//            }
+            .waitForFragmentResume()
+//            .animate { view, _ ->
+//                return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up).apply {
+//                    setTarget(view)
+//                }
+//            }
             .remove(currentFragment)
             .letsGo()
     }
