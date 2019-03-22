@@ -27,9 +27,9 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        view.addOnLayoutChangeListener(this)
-
         super.onViewCreated(view, savedInstanceState)
+
+        view.addOnLayoutChangeListener(this)
 
         onViewCreatedListener?.invoke()
         viewCreated = true
@@ -65,7 +65,7 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
     fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: () -> Unit) {
         onResumeListener = listener
         if (needInvokeAfterEvent && resumed) {
-            onViewCreatedListener?.invoke()
+            onResumeListener?.invoke()
             resumed = false
         }
     }

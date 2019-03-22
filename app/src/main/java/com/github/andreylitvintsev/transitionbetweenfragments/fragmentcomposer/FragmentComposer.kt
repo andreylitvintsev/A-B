@@ -35,6 +35,14 @@ class FragmentComposer(
         return this@FragmentComposer
     }
 
+    fun setTargetFragment(baseFragment: BaseFragment): FragmentComposer {
+        newCommand(CommandType.TRANSACTION) {
+            currentFragment = baseFragment
+            launchNextCommandForTransaction(baseFragment)
+        }
+        return this@FragmentComposer
+    }
+
     fun remove(baseFragment: BaseFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
             currentFragment = baseFragment
@@ -80,8 +88,8 @@ class FragmentComposer(
     fun waitForViewLayoutChanged(): FragmentComposer {
         newCommand(CommandType.WAIT) {
             currentFragment?.setOnViewLayoutChanged(needInvokeAfterEvent = true) {
-                nextCommandDescriptor()?.command?.invoke()
                 currentFragment?.setOnViewLayoutChanged(listener = null)
+                nextCommandDescriptor()?.command?.invoke()
             }
         }
         return this@FragmentComposer
