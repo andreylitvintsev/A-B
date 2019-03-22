@@ -50,12 +50,12 @@ class MainActivity : AppCompatActivity() {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer) as BaseFragment
 
         FragmentComposer(supportFragmentManager)
-//            .setTargetFragment(currentFragment)
-//            .animate { view, _ ->
-//                return@animate AnimatorInflater.loadAnimator(this, R.animator.move_to_back).apply {
-//                    setTarget(view)
-//                }
-//            }
+            .setTargetFragment(currentFragment)
+            .animate { view, _ ->
+                return@animate AnimatorInflater.loadAnimator(this, R.animator.move_to_back).apply {
+                    setTarget(view)
+                }
+            }
             .add(R.id.fragmentContainer, newFragment)
             .waitForViewLayoutChanged() // вьюха еще не готова для анимирования, проблема в том что не сбрасывается флаг у все время существующего фрагмента + вообще по идее не нужно вызывать
             .transform { view, baseFragment ->

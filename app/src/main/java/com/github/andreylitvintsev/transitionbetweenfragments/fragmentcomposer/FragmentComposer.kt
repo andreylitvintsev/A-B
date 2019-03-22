@@ -72,22 +72,19 @@ class FragmentComposer(
 
     fun transform(viewTransformation: (view: View, baseFragment: BaseFragment) -> Unit): FragmentComposer {
         newCommand(CommandType.TRANSFORM) {
-//            currentFragment?.setOnViewCreatedListener(needInvokeAfterEvent = true) {
-//                currentFragment?.setOnViewCreatedListener(listener = null)
                 viewTransformation.invoke(
                     getSafetyCurrentFragmentView(),
                     getSafetyCurrentFragment()
                 )
                 Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | transform: ${currentFragment!!::class.java.simpleName}")
                 nextCommandDescriptor()?.command?.invoke()
-//            }
         }
         return this@FragmentComposer
     }
 
     fun waitForViewLayoutChanged(): FragmentComposer {
         newCommand(CommandType.WAIT) {
-            getSafetyCurrentFragment().setOnViewLayoutChanged(needInvokeAfterEvent = true) {
+            getSafetyCurrentFragment().setOnViewLayoutChanged(needInvokeAfterEvent = true) { // TODO: попробовать сделать обертку для (подписки -> отклика -> отписки)
                 currentFragment!!.setOnViewLayoutChanged(listener = null)
                 Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | layout: ${currentFragment!!::class.java.simpleName}")
                 nextCommandDescriptor()?.command?.invoke()
