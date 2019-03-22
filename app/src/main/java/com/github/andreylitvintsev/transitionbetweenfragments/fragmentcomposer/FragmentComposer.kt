@@ -1,4 +1,4 @@
-package com.github.andreylitvintsev.transitionbetweenfragments
+package com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer
 
 import android.animation.Animator
 import android.view.View
@@ -88,15 +88,18 @@ class FragmentComposer(
     }
 
     private inline fun newCommand(commandType: CommandType, crossinline commandBody: () -> Unit) {
-        commands.add(CommandDescriptor(commandType) {
-            ++currentCommandIndex
+        commands.add(
+            CommandDescriptor(
+                commandType
+            ) {
+                ++currentCommandIndex
 
-            commandBody.invoke()
+                commandBody.invoke()
 
-            if (commands.size > 1) {
-                commands[commands.size - 2].nextCommand = commands[commands.size - 1]
-            }
-        })
+                if (commands.size > 1) {
+                    commands[commands.size - 2].nextCommand = commands[commands.size - 1]
+                }
+            })
     }
 
     private fun launchNextCommandForTransaction(baseFragment: BaseFragment) {

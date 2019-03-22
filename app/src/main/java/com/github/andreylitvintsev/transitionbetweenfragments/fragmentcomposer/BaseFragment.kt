@@ -1,4 +1,4 @@
-package com.github.andreylitvintsev.transitionbetweenfragments
+package com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer
 
 import android.os.Bundle
 import android.view.LayoutInflater

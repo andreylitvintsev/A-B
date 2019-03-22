@@ -1,10 +1,10 @@
 package com.github.andreylitvintsev.transitionbetweenfragments
 
-import android.animation.AnimatorInflater
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer.FragmentComposer
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -30,7 +30,9 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.fragment2 -> {
-                FragmentComposer(supportFragmentManager)
+                FragmentComposer(
+                    supportFragmentManager
+                )
 //                    .remove(fragments[0])
 //                    .add(R.id.fragmentContainer, fragments[1])
 //                    .animate { view, baseFragment ->
