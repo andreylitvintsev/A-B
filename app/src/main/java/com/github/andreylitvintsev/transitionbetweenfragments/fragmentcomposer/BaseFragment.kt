@@ -74,7 +74,7 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
         }
     }
 
-    fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: () -> Unit) {
+    fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
         onResumeListener = listener
         if (needInvokeAfterEvent && resumed) {
             onResumeListener?.invoke()
@@ -82,7 +82,7 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
         }
     }
 
-    fun setOnViewCreatedListener(needInvokeAfterEvent: Boolean = false, listener: () -> Unit) {
+    fun setOnViewCreatedListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
         onViewCreatedListener = listener
         if (needInvokeAfterEvent && viewCreated) {
             onViewCreatedListener?.invoke()

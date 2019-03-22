@@ -1,6 +1,5 @@
 package com.github.andreylitvintsev.transitionbetweenfragments
 
-import android.animation.AnimatorInflater
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer) as BaseFragment
 
         FragmentComposer(supportFragmentManager)
-            .setTargetFragment(currentFragment)
+//            .setTargetFragment(currentFragment)
 //            .animate { view, _ ->
 //                return@animate AnimatorInflater.loadAnimator(this, R.animator.move_to_back).apply {
 //                    setTarget(view)
@@ -56,7 +55,7 @@ class MainActivity : AppCompatActivity() {
 //            }
             .add(R.id.fragmentContainer, newFragment)
 //            .waitForViewLayoutChanged() // вьюха еще не готова для анимирования, проблема в том что не сбрасывается флаг у все время существующего фрагмента + вообще по идее не нужно вызывать
-            .waitForViewCreated()
+//            .waitForViewCreated()
 //            .transform { view, baseFragment ->
 //                (view as SupportedFractionFrameLayout).yFraction = 1f
 //            }
@@ -66,6 +65,7 @@ class MainActivity : AppCompatActivity() {
 //                    setTarget(view)
 //                }
 //            }
+            .waitForViewCreated()
             .remove(currentFragment)
             .letsGo()
     }

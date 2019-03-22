@@ -91,6 +91,7 @@ class FragmentComposer(
     fun waitForViewCreated(): FragmentComposer {
         newCommand(CommandType.WAIT) {
             getSafetyCurrentFragment().setOnViewCreatedListener(needInvokeAfterEvent = true) {
+                currentFragment!!.setOnViewCreatedListener(listener = null)
                 nextCommandDescriptor()?.command?.invoke()
             }
         }
@@ -100,6 +101,7 @@ class FragmentComposer(
     fun waitForFragmentResume(): FragmentComposer {
         newCommand(CommandType.WAIT) {
             getSafetyCurrentFragment().setOnResumeListener(needInvokeAfterEvent = true) {
+                currentFragment!!.setOnResumeListener(listener = null)
                 nextCommandDescriptor()?.command?.invoke()
             }
         }
