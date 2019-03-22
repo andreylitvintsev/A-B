@@ -76,11 +76,13 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
 
     fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
         onResumeListener = listener
-        if (needInvokeAfterEvent && resumed) {
+        if (needInvokeAfterEvent && resumed) { // когда фрагмент создается обычным способом, у нас не сбрасывается флаг если мы не подписывались
             onResumeListener?.invoke()
             resumed = false
         }
     }
+    // создали -> запустили A -> !!!установились флаги но не сбросились!!! -> запустили B -> ...
+    // идеи: может сбрасывать при удалении?
 
     fun setOnViewCreatedListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
         onViewCreatedListener = listener
@@ -96,6 +98,12 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
             onViewLayoutChangeListener?.invoke()
             viewLayoutChanged = false
         }
+    }
+
+    internal fun cleanEventFlags() { // TODO: подумать над очисткой (количество флагов будет расти)
+        resumed = false
+        viewCreated = false
+        viewLayoutChanged = false
     }
 
 }

@@ -1,10 +1,12 @@
 package com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer
 
 import android.animation.Animator
+import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.animation.addListener
 import androidx.fragment.app.FragmentManager
+import kotlin.random.Random
 
 
 private enum class CommandType {
@@ -29,6 +31,7 @@ class FragmentComposer(
     fun add(@IdRes containerViewId: Int, baseFragment: BaseFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
             currentFragment = baseFragment
+            Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | add: ${baseFragment::class.java.simpleName} isResumed: ${baseFragment.isResumed}")
             fragmentManager.beginTransaction().add(containerViewId, baseFragment).commit()
             nextCommandDescriptor()?.command?.invoke()
         }
@@ -46,6 +49,8 @@ class FragmentComposer(
     fun remove(baseFragment: BaseFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
             currentFragment = baseFragment
+            baseFragment.cleanEventFlags()
+            Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | remove: ${baseFragment::class.java.simpleName}")
             fragmentManager.beginTransaction().remove(baseFragment).commit()
             nextCommandDescriptor()?.command?.invoke()
         }
@@ -67,13 +72,15 @@ class FragmentComposer(
 
     fun transform(viewTransformation: (view: View, baseFragment: BaseFragment) -> Unit): FragmentComposer {
         newCommand(CommandType.TRANSFORM) {
-            currentFragment?.setOnViewCreatedListener(needInvokeAfterEvent = true) {
+//            currentFragment?.setOnViewCreatedListener(needInvokeAfterEvent = true) {
+//                currentFragment?.setOnViewCreatedListener(listener = null)
                 viewTransformation.invoke(
                     getSafetyCurrentFragmentView(),
                     getSafetyCurrentFragment()
                 )
+                Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | transform: ${currentFragment!!::class.java.simpleName}")
                 nextCommandDescriptor()?.command?.invoke()
-            }
+//            }
         }
         return this@FragmentComposer
     }
@@ -82,6 +89,7 @@ class FragmentComposer(
         newCommand(CommandType.WAIT) {
             getSafetyCurrentFragment().setOnViewLayoutChanged(needInvokeAfterEvent = true) {
                 currentFragment!!.setOnViewLayoutChanged(listener = null)
+                Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | layout: ${currentFragment!!::class.java.simpleName}")
                 nextCommandDescriptor()?.command?.invoke()
             }
         }
@@ -102,6 +110,7 @@ class FragmentComposer(
         newCommand(CommandType.WAIT) {
             getSafetyCurrentFragment().setOnResumeListener(needInvokeAfterEvent = true) {
                 currentFragment!!.setOnResumeListener(listener = null)
+                Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | resume: ${currentFragment!!::class.java.simpleName}")
                 nextCommandDescriptor()?.command?.invoke()
             }
         }
@@ -156,5 +165,7 @@ class FragmentComposer(
             commands[0].command.invoke()
         }
     }
+
+    private val randomId = Random.nextInt() % 256
 
 }

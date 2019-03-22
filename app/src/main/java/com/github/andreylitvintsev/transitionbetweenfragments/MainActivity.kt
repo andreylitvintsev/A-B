@@ -1,6 +1,8 @@
 package com.github.andreylitvintsev.transitionbetweenfragments
 
+import android.animation.AnimatorInflater
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -44,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openFragmentWithAnimation(newFragment: BaseFragment) {
+        Log.d("NON COMPOSER", "----------------------------")
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer) as BaseFragment
 
         FragmentComposer(supportFragmentManager)
@@ -54,18 +57,16 @@ class MainActivity : AppCompatActivity() {
 //                }
 //            }
             .add(R.id.fragmentContainer, newFragment)
-//            .waitForViewLayoutChanged() // вьюха еще не готова для анимирования, проблема в том что не сбрасывается флаг у все время существующего фрагмента + вообще по идее не нужно вызывать
-//            .waitForViewCreated()
-//            .transform { view, baseFragment ->
-//                (view as SupportedFractionFrameLayout).yFraction = 1f
-//            }
+            .waitForViewLayoutChanged() // вьюха еще не готова для анимирования, проблема в том что не сбрасывается флаг у все время существующего фрагмента + вообще по идее не нужно вызывать
+            .transform { view, baseFragment ->
+                (view as SupportedFractionFrameLayout).yFraction = 1f
+            }
             .waitForFragmentResume()
-//            .animate { view, _ ->
-//                return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up).apply {
-//                    setTarget(view)
-//                }
-//            }
-            .waitForViewCreated()
+            .animate { view, _ ->
+                return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up).apply {
+                    setTarget(view)
+                }
+            }
             .remove(currentFragment)
             .letsGo()
     }
