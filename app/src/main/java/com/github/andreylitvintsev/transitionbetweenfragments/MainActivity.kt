@@ -1,5 +1,6 @@
 package com.github.andreylitvintsev.transitionbetweenfragments
 
+import android.animation.AnimatorInflater
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -30,27 +31,14 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.fragment2 -> {
-                FragmentComposer(
-                    supportFragmentManager
-                )
-//                    .remove(fragments[0])
-//                    .add(R.id.fragmentContainer, fragments[1])
-//                    .animate { view, baseFragment ->
-//                        return@animate ObjectAnimator.ofFloat(view, "rotation", 45f)
-//                            .setDuration(1000L)
-//                    }
-//                    .remove(fragments[1])
+                FragmentComposer(supportFragmentManager)
                     .add(R.id.fragmentContainer, FragmentA())
                     .waitForViewLayoutChanged()
-                    .transform { view, baseFragment ->
-                        view.y = (view as SupportedFractionFrameLayout).height - 56f - 56f
+                    .animate { view, baseFragment ->
+                        return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up).apply {
+                            setTarget(view)
+                        }
                     }
-//                    .animate { view, baseFragment ->
-//                        return@animate AnimatorInflater.loadAnimator(this, R.animator.show_up).apply {
-//                            setTarget(view)
-//                        }
-//                    }
-//                    .waitForViewLayoutChanged()
                 .letsGo()
                 true
             }

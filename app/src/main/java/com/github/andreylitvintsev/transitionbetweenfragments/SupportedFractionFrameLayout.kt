@@ -2,12 +2,8 @@ package com.github.andreylitvintsev.transitionbetweenfragments
 
 import android.annotation.TargetApi
 import android.content.Context
-import android.graphics.Point
 import android.os.Build
 import android.util.AttributeSet
-import android.util.DisplayMetrics
-import android.util.Log
-import android.view.WindowManager
 import android.widget.FrameLayout
 
 
@@ -36,67 +32,30 @@ class SupportedFractionFrameLayout : FrameLayout {
         defStyleRes
     )
 
-    val displaySize: Point
-        get() {
-            val displayMetrics = DisplayMetrics()
-            val windowManager = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager)
-            windowManager.defaultDisplay.getMetrics(displayMetrics)
-            return Point(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        }
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-    }
-
-
-    var h: Int = 20
-    var w: Int = 20
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        this.h = h
-        this.w = w
-    }
+//    val displaySize: Point
+//        get() {
+//            val displayMetrics = DisplayMetrics()
+//            val windowManager = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager)
+//            windowManager.defaultDisplay.getMetrics(displayMetrics)
+//            return Point(displayMetrics.widthPixels, displayMetrics.heightPixels)
+//        }
 
     var xFraction: Float
         get() {
-            return x / displaySize.x
+            return x / width
         }
         set(value) {
             if (value !in -1f..1f) throw IllegalArgumentException("Argument of xFraction parameter must be in range [-1;1]")
-            x = value * displaySize.x
+            x = value * width
         }
 
     var yFraction: Float
         get() {
-            return y / displaySize.y
+            return y / height
         }
         set(value) {
             if (value !in -1f..1f) throw IllegalArgumentException("Argument of yFraction parameter must be in range [-1;1]")
-            y = value * displaySize.y
-        }
-
-    var pivotFractionX: Float
-        get() {
-            return pivotX / displaySize.x
-        }
-        set(value) {
-            if (value !in -1f..1f) throw IllegalArgumentException("Argument of pivotFractionX parameter must be in range [-1;1]")
-            pivotX = value * displaySize.x
-        }
-
-    var pivotFractionY: Float
-        get() {
-            return pivotY / displaySize.y
-        }
-        set(value) {
-            Log.d("TAG", value.toString())
-            if (value !in -1f..1f) throw IllegalArgumentException("Argument of pivotFractionY parameter must be in range [-1;1]")
-            pivotY = value * displaySize.y
+            y = value * height
         }
 
 }
