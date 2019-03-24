@@ -10,7 +10,6 @@ import com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer.F
 import com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer.PlayerFragment
 
 
-// TODO: поправить переход в фон
 class MainActivity : AppCompatActivity(), ClickableFragment.OnClickListener {
 
     private val fragments = arrayOf(FragmentA(), FragmentB())

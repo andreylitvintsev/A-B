@@ -29,7 +29,7 @@ class FragmentComposer(
     fun add(@IdRes containerViewId: Int, playerFragment: PlayerFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
             currentFragment = playerFragment
-            fragmentManager.beginTransaction().add(containerViewId, playerFragment).commit()
+            fragmentManager.beginTransaction().add(containerViewId, playerFragment).commitAllowingStateLoss()
             nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
@@ -47,7 +47,7 @@ class FragmentComposer(
         newCommand(CommandType.TRANSACTION) {
             currentFragment = playerFragment
             playerFragment.cleanEventFlags()
-            fragmentManager.beginTransaction().remove(playerFragment).commit()
+            fragmentManager.beginTransaction().remove(playerFragment).commitAllowingStateLoss()
             nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
