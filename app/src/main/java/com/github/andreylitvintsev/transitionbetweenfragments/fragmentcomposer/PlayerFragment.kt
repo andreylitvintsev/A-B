@@ -1,14 +1,11 @@
 package com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import androidx.annotation.LayoutRes
 import androidx.fragment.app.Fragment
 
 
-abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
+open class PlayerFragment : Fragment(), View.OnLayoutChangeListener {
 
     private var resumed = false
     private var onResumeListener: (() -> Unit)? = null
@@ -18,13 +15,6 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
 
     private var viewLayoutChanged = false
     private var onViewLayoutChangeListener: (() -> Unit)? = null
-
-    @LayoutRes
-    abstract fun getLayoutId(): Int
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(getLayoutId(), container, false)
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -74,17 +64,15 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
         }
     }
 
-    fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
+    internal fun setOnResumeListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
         onResumeListener = listener
-        if (needInvokeAfterEvent && resumed) { // когда фрагмент создается обычным способом, у нас не сбрасывается флаг если мы не подписывались
+        if (needInvokeAfterEvent && resumed) {
             onResumeListener?.invoke()
             resumed = false
         }
     }
-    // создали -> запустили A -> !!!установились флаги но не сбросились!!! -> запустили B -> ...
-    // идеи: может сбрасывать при удалении?
 
-    fun setOnViewCreatedListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
+    internal fun setOnViewCreatedListener(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
         onViewCreatedListener = listener
         if (needInvokeAfterEvent && viewCreated) {
             onViewCreatedListener?.invoke()
@@ -92,7 +80,7 @@ abstract class BaseFragment : Fragment(), View.OnLayoutChangeListener {
         }
     }
 
-    fun setOnViewLayoutChanged(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
+    internal fun setOnViewLayoutChanged(needInvokeAfterEvent: Boolean = false, listener: (() -> Unit)?) {
         onViewLayoutChangeListener = listener
         if (needInvokeAfterEvent && viewLayoutChanged) {
             onViewLayoutChangeListener?.invoke()

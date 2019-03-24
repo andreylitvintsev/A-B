@@ -2,27 +2,26 @@ package com.github.andreylitvintsev.transitionbetweenfragments
 
 import android.animation.AnimatorInflater
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
-import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer.BaseFragment
+import androidx.fragment.app.Fragment
 import com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer.FragmentComposer
-import kotlinx.android.synthetic.main.activity_main.*
+import com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer.PlayerFragment
 
-class MainActivity : AppCompatActivity() {
+
+// TODO: поправить переход в фон
+class MainActivity : AppCompatActivity(), ClickableFragment.OnClickListener {
 
     private val fragments = arrayOf(FragmentA(), FragmentB())
+    private var currentFragmentIndex = 0
+    private var canClick = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
 
-        if (savedInstanceState == null) supportFragmentManager.beginTransaction().add(
-            R.id.fragmentContainer,
-            fragments[0]
-        ).commit()
+        if (savedInstanceState == null) openFragment(currentFragmentIndex)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
@@ -30,24 +29,22 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when (item?.itemId) {
-            R.id.fragment1 -> {
-                openFragmentWithAnimation(fragments[0])
-                true
-            }
-            R.id.fragment2 -> {
-                openFragmentWithAnimation(fragments[1])
-                true
-            }
-
-            else -> super.onOptionsItemSelected(item)
+    override fun onClick(fragment: Fragment, view: View) {
+        if (canClick) {
+            canClick = false
+            currentFragmentIndex = if (currentFragmentIndex == 0) 1 else 0
+            openFragmentWithAnimation(currentFragmentIndex)
         }
     }
 
-    private fun openFragmentWithAnimation(newFragment: BaseFragment) {
-        Log.d("NON COMPOSER", "----------------------------")
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer) as BaseFragment
+    private fun openFragment(fragmentIndex: Int) {
+        supportFragmentManager.beginTransaction()
+            .add(R.id.fragmentContainer, fragments[0])
+            .commit()
+    }
+
+    private fun openFragmentWithAnimation(fragmentIndex: Int) {
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer) as PlayerFragment
 
         FragmentComposer(supportFragmentManager)
             .setTargetFragment(currentFragment)
@@ -56,8 +53,8 @@ class MainActivity : AppCompatActivity() {
                     setTarget(view)
                 }
             }
-            .add(R.id.fragmentContainer, newFragment)
-            .waitForViewLayoutChanged() // вьюха еще не готова для анимирования, проблема в том что не сбрасывается флаг у все время существующего фрагмента + вообще по идее не нужно вызывать
+            .add(R.id.fragmentContainer, fragments[fragmentIndex])
+            .waitForViewLayoutChanged()
             .transform { view, baseFragment ->
                 (view as SupportedFractionFrameLayout).yFraction = 1f
             }
@@ -68,6 +65,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             .remove(currentFragment)
+            .notify {
+                canClick = true
+            }
             .letsGo()
     }
 

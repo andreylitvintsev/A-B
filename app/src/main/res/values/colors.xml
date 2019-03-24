@@ -3,6 +3,10 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
     <color name="backgroundColorA">#F57C00</color>
     <color name="backgroundColorB">#1976D2</color>
+
+    <color name="status_bar_shadow_start">@android:color/transparent</color>
+    <color name="status_bar_shadow_end">#3c000000</color>
 </resources>

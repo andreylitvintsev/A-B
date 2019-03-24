@@ -1,16 +1,14 @@
 package com.github.andreylitvintsev.transitionbetweenfragments.fragmentcomposer
 
 import android.animation.Animator
-import android.util.Log
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.core.animation.addListener
 import androidx.fragment.app.FragmentManager
-import kotlin.random.Random
 
 
 private enum class CommandType {
-    TRANSACTION, ANIMATION, TRANSFORM, WAIT
+    TRANSACTION, ANIMATION, TRANSFORM, WAIT, CALLBACK
 }
 
 private class CommandDescriptor(
@@ -26,38 +24,36 @@ class FragmentComposer(
 
     private var currentCommandIndex = -1
 
-    private var currentFragment: BaseFragment? = null
+    private var currentFragment: PlayerFragment? = null
 
-    fun add(@IdRes containerViewId: Int, baseFragment: BaseFragment): FragmentComposer {
+    fun add(@IdRes containerViewId: Int, playerFragment: PlayerFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
-            currentFragment = baseFragment
-            Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | add: ${baseFragment::class.java.simpleName} isResumed: ${baseFragment.isResumed}")
-            fragmentManager.beginTransaction().add(containerViewId, baseFragment).commit()
+            currentFragment = playerFragment
+            fragmentManager.beginTransaction().add(containerViewId, playerFragment).commit()
             nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
 
-    fun setTargetFragment(baseFragment: BaseFragment): FragmentComposer {
+    fun setTargetFragment(playerFragment: PlayerFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
-            currentFragment = baseFragment
+            currentFragment = playerFragment
             nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
 
-    fun remove(baseFragment: BaseFragment): FragmentComposer {
+    fun remove(playerFragment: PlayerFragment): FragmentComposer {
         newCommand(CommandType.TRANSACTION) {
-            currentFragment = baseFragment
-            baseFragment.cleanEventFlags()
-            Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | remove: ${baseFragment::class.java.simpleName}")
-            fragmentManager.beginTransaction().remove(baseFragment).commit()
+            currentFragment = playerFragment
+            playerFragment.cleanEventFlags()
+            fragmentManager.beginTransaction().remove(playerFragment).commit()
             nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
 
-    fun animate(animationCreating: (view: View, baseFragment: BaseFragment) -> Animator): FragmentComposer {
+    fun animate(animationCreating: (view: View, playerFragment: PlayerFragment) -> Animator): FragmentComposer {
         newCommand(CommandType.ANIMATION) {
             animationCreating.invoke(
                 getSafetyCurrentFragmentView(),
@@ -70,23 +66,22 @@ class FragmentComposer(
         return this@FragmentComposer
     }
 
-    fun transform(viewTransformation: (view: View, baseFragment: BaseFragment) -> Unit): FragmentComposer {
+    fun transform(viewTransformation: (view: View, playerFragment: PlayerFragment) -> Unit): FragmentComposer {
         newCommand(CommandType.TRANSFORM) {
-                viewTransformation.invoke(
-                    getSafetyCurrentFragmentView(),
-                    getSafetyCurrentFragment()
-                )
-                Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | transform: ${currentFragment!!::class.java.simpleName}")
-                nextCommandDescriptor()?.command?.invoke()
+            viewTransformation.invoke(
+                getSafetyCurrentFragmentView(),
+                getSafetyCurrentFragment()
+            )
+            nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
 
     fun waitForViewLayoutChanged(): FragmentComposer {
         newCommand(CommandType.WAIT) {
-            getSafetyCurrentFragment().setOnViewLayoutChanged(needInvokeAfterEvent = true) { // TODO: попробовать сделать обертку для (подписки -> отклика -> отписки)
+            getSafetyCurrentFragment().setOnViewLayoutChanged(needInvokeAfterEvent = true) {
+                // TODO: попробовать сделать обертку для (подписки -> отклика -> отписки)
                 currentFragment!!.setOnViewLayoutChanged(listener = null)
-                Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | layout: ${currentFragment!!::class.java.simpleName}")
                 nextCommandDescriptor()?.command?.invoke()
             }
         }
@@ -107,9 +102,16 @@ class FragmentComposer(
         newCommand(CommandType.WAIT) {
             getSafetyCurrentFragment().setOnResumeListener(needInvokeAfterEvent = true) {
                 currentFragment!!.setOnResumeListener(listener = null)
-                Log.d("COMPOSER $randomId", "${currentCommandIndex+1}/${commands.size} | resume: ${currentFragment!!::class.java.simpleName}")
                 nextCommandDescriptor()?.command?.invoke()
             }
+        }
+        return this@FragmentComposer
+    }
+
+    fun notify(id: Int = 0, callback: (id: Int) -> Unit): FragmentComposer  {
+        newCommand(CommandType.CALLBACK) {
+            callback.invoke(id)
+            nextCommandDescriptor()?.command?.invoke()
         }
         return this@FragmentComposer
     }
@@ -145,7 +147,7 @@ class FragmentComposer(
         return (hasNextCommand()) && commands[currentCommandIndex + 1].commandType == commandType
     }
 
-    private inline fun getSafetyCurrentFragment(): BaseFragment {
+    private inline fun getSafetyCurrentFragment(): PlayerFragment {
         return nonNullable(currentFragment, "Must be fragment added before 'transform' method!")
     }
 
@@ -162,7 +164,5 @@ class FragmentComposer(
             commands[0].command.invoke()
         }
     }
-
-    private val randomId = Random.nextInt() % 256
 
 }

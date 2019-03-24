@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               tools:context=".MainActivity">
-
-    <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            style="@style/Toolbar.VersionSpecific"/>
 
     <FrameLayout
             android:id="@+id/fragmentContainer"
@@ -18,5 +12,7 @@
             android:layout_height="match_parent"
             tools:showIn="@layout/fragment_a"/>
 
+    <View android:layout_width="match_parent" android:layout_height="8dp"
+          android:background="@drawable/bg_status_bar_shadow"/>
 
-</LinearLayout>
+</FrameLayout>
